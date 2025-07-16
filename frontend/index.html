@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>my docs.ai</title>
+  <link href="https://unpkg.com/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background: #f6f6f6;
+    }
+    h1 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    #messages {
+      margin-top: 1rem;
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      min-height: 100px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 0.5rem;
+      margin-top: 1rem;
+    }
+    #fileUpload {
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1><i class="ti ti-robot"></i> my docs.ai</h1>
+
+  <!-- Mensajes -->
+  <div id="messages">💬 Esperando tu pregunta...</div>
+
+  <!-- Pregunta -->
+  <input type="text" id="user_id" placeholder="Tu ID de usuario" size="20" />
+  <br>
+  <input type="text" id="userInput" placeholder="Escribe tu pregunta..." size="40" />
+  <button onclick="sendMessage()">Enviar</button>
+
+  <!-- Subida de archivo -->
+  <div id="fileUpload">
+    <h3>📎 Subir documento</h3>
+    <input type="file" id="file" />
+    <button onclick="uploadDoc()">Subir</button>
+  </div>
+
+ <script src="/static/chat.js"></script>
+
+<script src="/static/upload.js"></script>
+</body>
+</html>
