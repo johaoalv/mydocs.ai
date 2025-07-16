@@ -1,0 +1,29 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# --- Entorno virtual ---
+venv/
+backend/venv/
+
+# --- Variables de entorno ---
+.env
+*.env
+
+# --- Datos locales / temporales ---
+backend/data/
+backend/faiss_data/
+
+# --- macOS ---
+.DS_Store
+
+# --- Documentación opcional ---
+docs/
+
+# --- Logs (si llegás a tener) ---
+*.log
+
+# --- VSCode ---
+.vscode/
