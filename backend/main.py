@@ -1,5 +1,4 @@
-import os
-import sys
+import os, json, sys, fitz
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -23,6 +22,11 @@ frontend_dir = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 app.mount("/static", StaticFiles(directory=os.path.join(frontend_dir, "js")), name="static")
 
 @app.get("/")
+def read_login():
+    return FileResponse(os.path.join(frontend_dir, "login.html"))
+
+
+@app.get("/chat")
 def read_index():
     return FileResponse(os.path.join(frontend_dir, "index.html"))
 
@@ -55,8 +59,23 @@ async def chat(bot_id: str, request: Request):
 @app.post("/upload-doc")
 async def upload_doc(file: UploadFile, user_id: str = Form(...)):
     content = await file.read()
+
+    # ⬇️ Guarda nombre de documento en un JSON específico del usuario
+    filename = file.filename
+    path = os.path.join("backend/data", f"{user_id}_docs.json")
+    docs_list = []
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            docs_list = json.load(f)
+    
+    if filename not in docs_list:
+        docs_list.append(filename)
+    
+    with open(path, "w") as f:
+        json.dump(docs_list, f)
+
     if file.filename.endswith(".pdf"):
-        import fitz
+       
         doc = fitz.open(stream=content, filetype="pdf")
         text = "\n".join([page.get_text() for page in doc])
     else:
@@ -65,6 +84,16 @@ async def upload_doc(file: UploadFile, user_id: str = Form(...)):
     chunks = [text[i:i+500] for i in range(0, len(text), 500)]
     index_documents(user_id, chunks)
     return {"status": "ok", "chunks": len(chunks)}
+
+#endpoint para ver docs cargados
+@app.get("/docs/{user_id}")
+def get_user_docs(user_id: str):
+    path = os.path.join("backend/data", f"{user_id}_docs.json")
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return {"docs": json.load(f)}
+    return {"docs": []}
+
 
 @app.post("/ask")
 async def ask_doc(user_id: str = Form(...), question: str = Form(...)):

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - my docs.ai</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f6f6f6; margin: 0; }
+        .login-box { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; width: 300px; }
+        h2 { margin-top: 0; }
+        input { padding: 0.7rem; margin-top: 1rem; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 0.7rem; margin-top: 1rem; width: 100%; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>Bienvenido a my docs.ai</h2>
+        <p>Ingresa tu ID de usuario para continuar</p>
+        <form onsubmit="login(event)">
+            <input type="text" id="user_id_input" placeholder="Tu ID de usuario" required>
+            <button type="submit">Ingresar</button>
+        </form>
+    </div>
+
+    <script>
+        function login(event) {
+            event.preventDefault(); // Evita que el formulario se envíe de la forma tradicional
+            const userId = document.getElementById('user_id_input').value.trim();
+            if (userId) {
+                // Redireccionamos a la página de chat, pasando el user_id como parámetro en la URL
+                window.location.href = `/chat?user_id=${encodeURIComponent(userId)}`;
+            }
+        }
+    </script>
+</body>
+</html>

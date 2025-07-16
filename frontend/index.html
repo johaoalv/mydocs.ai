@@ -39,21 +39,43 @@
   <!-- Mensajes -->
   <div id="messages">💬 Esperando tu pregunta...</div>
 
+  <div id="user-info" style="margin-bottom: 1rem; margin-top: 1rem;">
+    <span>Logueado como: <b id="current_user_id"></b></span>
+    <a href="/" style="margin-left: 1rem; font-size: 0.8em;">(Cambiar usuario)</a>
+  </div>
+
   <!-- Pregunta -->
-  <input type="text" id="user_id" placeholder="Tu ID de usuario" size="20" />
-  <br>
   <input type="text" id="userInput" placeholder="Escribe tu pregunta..." size="40" />
   <button onclick="sendMessage()">Enviar</button>
 
-  <!-- Subida de archivo -->
-  <div id="fileUpload">
-    <h3>📎 Subir documento</h3>
-    <input type="file" id="file" />
-    <button onclick="uploadDoc()">Subir</button>
-  </div>
+  <a href="/entrenar" id="upload-link" style="margin-left: 1rem;">Subir nuevo documento</a>
 
+  <div id="docs-list" style="margin-top: 1rem; background: #fff; padding: 1rem; border-radius: 8px;">
+  <strong>📂 Documentos cargados:</strong>
+  <ul id="docItems"></ul>
+</div>
+
+<script>
+  // Variable global para almacenar el ID del usuario actual. Será usada por otros scripts.
+  let currentUserId = null;
+
+  // Esta función se ejecuta cuando la página se carga
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get('user_id');
+
+    if (!userId) {
+      window.location.href = '/'; // Si no hay user_id, volver al login
+      return;
+    }
+
+    currentUserId = userId; // Guardamos el ID en la variable global
+    document.getElementById('current_user_id').innerText = currentUserId; // Mostramos el ID
+    document.getElementById('upload-link').href = `/entrenar?user_id=${encodeURIComponent(currentUserId)}`; // Pasamos el ID al link de entrenamiento
+    cargarDocs(); // Cargamos los documentos automáticamente
+  });
+</script>
  <script src="/static/chat.js"></script>
-
-<script src="/static/upload.js"></script>
+ <script src="/static/viewDocs.js"></script>
 </body>
 </html>
