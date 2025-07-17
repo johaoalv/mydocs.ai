@@ -41,7 +41,7 @@
 
   <div id="user-info" style="margin-bottom: 1rem; margin-top: 1rem;">
     <span>Logueado como: <b id="current_user_id"></b></span>
-    <a href="/" style="margin-left: 1rem; font-size: 0.8em;">(Cambiar usuario)</a>
+    <a href="/" style="margin-left: 1rem; font-size: 0.8em;">(Cerrar sesión)</a>
   </div>
 
   <!-- Pregunta -->
@@ -51,30 +51,42 @@
   <a href="/entrenar" id="upload-link" style="margin-left: 1rem;">Subir nuevo documento</a>
 
   <div id="docs-list" style="margin-top: 1rem; background: #fff; padding: 1rem; border-radius: 8px;">
-  <strong>📂 Documentos cargados:</strong>
-  <ul id="docItems"></ul>
-</div>
+    <strong>📂 Documentos cargados:</strong>
+    <ul id="docItems"></ul>
+  </div>
 
-<script>
-  // Variable global para almacenar el ID del usuario actual. Será usada por otros scripts.
-  let currentUserId = null;
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    const SUPABASE_URL = "https://rzsuzsgdogvpdgllqzwl.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6c3V6c2dkb2d2cGRnbGxxendsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI3MDIxODMsImV4cCI6MjA2ODI3ODE4M30.hHpKwcCwyWgmx9IYedNFyuy5eaqNPcZXZuMRCB28BW0";
 
-  // Esta función se ejecuta cuando la página se carga
-  window.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    const userId = params.get('user_id');
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    if (!userId) {
-      window.location.href = '/'; // Si no hay user_id, volver al login
-      return;
-    }
+    let currentUserId = null;
 
-    currentUserId = userId; // Guardamos el ID en la variable global
-    document.getElementById('current_user_id').innerText = currentUserId; // Mostramos el ID
-    document.getElementById('upload-link').href = `/entrenar?user_id=${encodeURIComponent(currentUserId)}`; // Pasamos el ID al link de entrenamiento
-    cargarDocs(); // Cargamos los documentos automáticamente
-  });
-</script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      const { data, error } = await supabaseClient.auth.getSession();
+
+      if (error || !data.session) {
+        console.error("❌ No hay sesión activa o error:", error);
+        window.location.href = "/"; // Volver al login
+        return;
+      }
+
+      const user = data.session.user;
+      currentUserId = user.id || user.email; // usamos el ID de Supabase o el email
+
+      console.log("✅ Sesión activa:", user);
+
+      // Mostrarlo en pantalla
+      document.getElementById('current_user_id').innerText = currentUserId;
+      document.getElementById('upload-link').href = `/entrenar?user_id=${encodeURIComponent(currentUserId)}`;
+
+      cargarDocs(); // Esto sigue funcionando como antes
+    });
+  </script>
+
+
  <script src="/static/chat.js"></script>
  <script src="/static/viewDocs.js"></script>
 </body>

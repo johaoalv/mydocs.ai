@@ -1,14 +1,32 @@
 async function cargarDocs() {
-  // Usa la variable global 'currentUserId' definida en index.html
-  const user_id = currentUserId;
-  if (!user_id) return;
+    try {
+      const sessionStr = localStorage.getItem("session");
+      if (!sessionStr) {
+        console.log("ℹ️ No hay sesión activa.");
+        return;
+      }
 
-  const res = await fetch(`/docs/${user_id}`);
-  const data = await res.json();
-  const list = document.getElementById("docItems");
-  list.innerHTML = "";
+      const session = JSON.parse(sessionStr);
+      const user_id = session.user.id;
+      console.log("🔎 Buscando documentos para:", user_id);
 
-  data.docs.forEach((doc) => {
-    list.innerHTML += `<li>✅ ${doc}</li>`;
-  });
-}
+      const res = await fetch(`/docs/${user_id}`);
+      const data = await res.json();
+
+      console.log("📄 Documentos encontrados:", data.docs);
+
+      const docList = document.getElementById("docItems");
+      docList.innerHTML = ""; // Limpiar antes
+
+      data.docs.forEach((doc) => {
+        const li = document.createElement("li");
+        li.textContent = doc.filename;
+        docList.appendChild(li);
+      });
+    } catch (error) {
+      console.error("❌ Error al cargar documentos:", error);
+    }
+  }
+
+  // Ejecutar cuando la página cargue
+  window.addEventListener("DOMContentLoaded", cargarDocs);

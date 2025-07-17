@@ -6,9 +6,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi import UploadFile, Form
 from backend.faiss_index import index_documents, search_similar_chunks
 from backend.openai_client import get_openai_response
+from backend.supabase_client import supabase
+
 
 app = FastAPI()
 print("✅ sys.path:", sys.path)
+print("🔐 Supabase key usada:", os.getenv("SUPABASE_SERVICES_ROLE")[:10])
+
 # Permitir llamadas desde el frontend
 app.add_middleware(
     CORSMiddleware,
@@ -59,40 +63,50 @@ async def chat(bot_id: str, request: Request):
 @app.post("/upload-doc")
 async def upload_doc(file: UploadFile, user_id: str = Form(...)):
     content = await file.read()
-
-    # ⬇️ Guarda nombre de documento en un JSON específico del usuario
     filename = file.filename
-    path = os.path.join("backend/data", f"{user_id}_docs.json")
-    docs_list = []
-    if os.path.exists(path):
-        with open(path, "r") as f:
-            docs_list = json.load(f)
-    
-    if filename not in docs_list:
-        docs_list.append(filename)
-    
-    with open(path, "w") as f:
-        json.dump(docs_list, f)
 
-    if file.filename.endswith(".pdf"):
-       
+    print(f"📄 Procesando archivo: {filename}")
+    print(f"👤 Usuario: {user_id}")
+
+    # Extraer texto del archivo
+    if filename.endswith(".pdf"):
         doc = fitz.open(stream=content, filetype="pdf")
         text = "\n".join([page.get_text() for page in doc])
     else:
         text = content.decode("utf-8")
 
+    # Chunkear texto
     chunks = [text[i:i+500] for i in range(0, len(text), 500)]
-    index_documents(user_id, chunks)
-    return {"status": "ok", "chunks": len(chunks)}
+    print(f"🧠 Chunks generados: {len(chunks)}")
 
-#endpoint para ver docs cargados
+    # Guardar en FAISS como siempre (si seguís usando eso)
+    from backend.faiss_index import index_documents
+    index_documents(user_id, chunks)
+
+    # Insertar en Supabase
+    try:
+        response = supabase.table("documents").insert({
+            "user_id": user_id,
+            "filename": filename,
+            "num_chunks": len(chunks),
+            "status": "procesado"
+        }).execute()
+
+        print("✅ Documento guardado en Supabase:", response.data)
+        return {"status": "ok", "chunks": len(chunks)}
+    except Exception as e:
+        print("❌ Error al guardar en Supabase:", e)
+        return {"status": "error", "message": str(e)}
+
 @app.get("/docs/{user_id}")
 def get_user_docs(user_id: str):
-    path = os.path.join("backend/data", f"{user_id}_docs.json")
-    if os.path.exists(path):
-        with open(path, "r") as f:
-            return {"docs": json.load(f)}
-    return {"docs": []}
+    try:
+        response = supabase.table("documents").select("*").eq("user_id", user_id).execute()
+        print("📄 Documentos encontrados:", response.data)
+        return {"docs": response.data}
+    except Exception as e:
+        print("❌ Error al obtener documentos:", e)
+        return {"docs": [], "error": str(e)}
 
 
 @app.post("/ask")
