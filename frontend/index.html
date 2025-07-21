@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>my docs.ai</title>
+  <link href="https://unpkg.com/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background: #f6f6f6;
+    }
+    h1 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    #messages {
+      margin-top: 1rem;
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      min-height: 100px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 0.5rem;
+      margin-top: 1rem;
+    }
+    #fileUpload {
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1><i class="ti ti-robot"></i> my docs.ai</h1>
+
+  <!-- Mensajes -->
+  <div id="messages">💬 Esperando tu pregunta...</div>
+
+  <div id="user-info" style="margin-bottom: 1rem; margin-top: 1rem;">
+    <span>Logueado como: <b id="current_user_id"></b></span>
+    <a href="/" style="margin-left: 1rem; font-size: 0.8em;">(Cerrar sesión)</a>
+  </div>
+
+  <!-- Pregunta -->
+  <input type="text" id="userInput" placeholder="Escribe tu pregunta..." size="40" />
+  <button onclick="sendMessage()">Enviar</button>
+
+  <a href="/entrenar" id="upload-link" style="margin-left: 1rem;">Subir nuevo documento</a>
+
+  <div id="docs-list" style="margin-top: 1rem; background: #fff; padding: 1rem; border-radius: 8px;">
+    <strong>📂 Documentos cargados:</strong>
+    <ul id="docItems"></ul>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    const SUPABASE_URL = "https://rzsuzsgdogvpdgllqzwl.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6c3V6c2dkb2d2cGRnbGxxendsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI3MDIxODMsImV4cCI6MjA2ODI3ODE4M30.hHpKwcCwyWgmx9IYedNFyuy5eaqNPcZXZuMRCB28BW0";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUserId = null;
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      const { data, error } = await supabaseClient.auth.getSession();
+
+      if (error || !data.session) {
+        console.error("❌ No hay sesión activa o error:", error);
+        window.location.href = "/"; // Volver al login
+        return;
+      }
+
+      const user = data.session.user;
+      currentUserId = user.id || user.email; // usamos el ID de Supabase o el email
+
+      console.log("✅ Sesión activa:", user);
+
+      // Mostrarlo en pantalla
+      document.getElementById('current_user_id').innerText = currentUserId;
+      document.getElementById('upload-link').href = `/entrenar?user_id=${encodeURIComponent(currentUserId)}`;
+
+      cargarDocs(); // Esto sigue funcionando como antes
+    });
+  </script>
+
+
+ <script src="/static/chat.js"></script>
+ <script src="/static/viewDocs.js"></script>
+</body>
+</html>
